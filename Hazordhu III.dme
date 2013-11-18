@@ -1,0 +1,39 @@
+// DM Environment file for Hazordhu III.dme.
+// All manual changes should be made outside the BEGIN_ and END_ blocks.
+// New source code should be placed in .dm files: choose File/New --> Code File.
+
+// BEGIN_INTERNALS
+// END_INTERNALS
+
+// BEGIN_FILE_DIR
+#define FILE_DIR .
+#define FILE_DIR "_Libraries"
+#define FILE_DIR "_Libraries/DarkCampainger.Map Paths"
+#define FILE_DIR "World Map tool"
+#define FILE_DIR "World Map tool/resources"
+#define FILE_DIR "World Map tool/resources/World Map"
+// END_FILE_DIR
+
+// BEGIN_PREFERENCES
+#define DEBUG
+// END_PREFERENCES
+
+// BEGIN_INCLUDE
+#include "__def.dm"
+#include "ai.dm"
+#include "Chat.dm"
+#include "ERROR CODES.dm"
+#include "general.dm"
+#include "Idears.dm"
+#include "interface.dm"
+#include "inventory.dm"
+#include "Login.dm"
+#include "Movement.dm"
+#include "party.dm"
+#include "regions.dm"
+#include "settlements.dm"
+#include "leinterface.dmf"
+#include "test.dmm"
+#include "World Map tool\resources\World Map\Code.dm"
+// END_INCLUDE
+

@@ -1,0 +1,61 @@
+"a" = (/map/grass,/area)
+"b" = (/map/grass,/map/path{tag = "icon-p7"; icon_state = "p7"},/area)
+"c" = (/map/grass,/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
+"d" = (/map/grass,/settlement/hdrozum/city{info = "You walk through the gates of Settal, and find yourself in the bustilng streets of the Rose of Civilization.  Among the people trading, chatting, and rushing around you can see guards patrolling and standing at their posts.  You hear the sound of hammers on metal, chisels chipping away at stone, and laughter coming from the inn just a half-score paces away.  You look around once more before you begin down the streets to attend to your business here."; name = "Settal"},/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
+"e" = (/map/grass,/map/path{tag = "icon-p1"; icon_state = "p1"},/area)
+"f" = (/map/grass,/settlement/hdrozum/village{info = "Small rural village"; name = "Cenalpust"},/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
+"g" = (/map/grass,/map/path{tag = "icon-pc"; icon_state = "pc"},/area)
+"h" = (/map/grass,/map/path{tag = "icon-pb"; icon_state = "pb"},/area)
+"i" = (/map/grass,/settlement/hdrozum/village{name = "Plainview"},/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
+"j" = (/mob/ai,/map/grass,/area)
+"k" = (/map/grass,/settlement/hdrozum/city{info = "Upon entering Ismuth, you feel a sense of peace and awe.  The city is hushed, but strangely so, as the streets are anything but empty.  Those who are talking do so quietly.  A patrol passes you, and you see the towering shadow of the Great Library of Ismuth looming over the city."; name = "Ismuth"},/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
+"l" = (/map/grass,/mob/ai,/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
+"m" = (/map/grass,/map/path{tag = "icon-pa"; icon_state = "pa"},/area)
+"n" = (/obj/start,/map/grass,/area)
+"o" = (/turf,/area)
+
+(1,1,1) = {"
+aaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaabcccdaaa
+aaaaaaaaaaaaeaaaaaaa
+aaaaaaaaaaaaeaaaaaaa
+aaaaaaaaaaaaeaaaaaaa
+aaaaaaaafcccgaaaaaaa
+aaaaaaaaaaaahccciaaa
+aaaaaaaaaaaaeaaaaaaa
+aaaaaaaaaaaaeaaaaaaa
+aaaaaaaaaaaaeaaaaaaa
+aaajaaaaaaaaeaaaaaaa
+kccccccccclcmaaaaaaa
+aaaaaaaaaaaaaaaaaaaa
+aaaanaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaa
+"}
+
+(1,1,2) = {"
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+oooooooooooooooooooo
+"}
