@@ -31,6 +31,7 @@ party
 					usr.party.remove(usr)
 
 		view_members()
+			set src in view(0)
 			var/total_size
 			var/mems_list = usr.party.members
 			for(var/mem in mems_list)
