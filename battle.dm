@@ -93,11 +93,13 @@ battle
 
 						for(var/mob/p in participants)
 							if(p.client)
-								o.screen_loc = "battlemap:[u.battlex], [u.battley]"
 								if(p == par)
+									o.screen_loc = "battlemap:[u.battlex], [u.battley]"
 									p.client.screen += o
 								else
 									var/obj/battleobj/o2 = new o.type
+
+									o2.screen_loc = "battlemap:[u.battlex], [u.battley]"
 
 									o2.realunit = u
 									o2.battle = src
@@ -251,7 +253,7 @@ battle
 				par.marked = null
 				if(par.client)	// mostly for debugging using ai
 					par.battlecommitted = 0
-					winset(usr, "commit", "is-disabled=false")
+					winset(par, "commit", "is-disabled=false")
 					for(var/obj/battleobj/o in par.client.screen)
 						if(!o.realunit && o.icon != 'grass.dmi')
 							del o
@@ -325,7 +327,7 @@ obj
 
 						for(var/unit/ua in us)
 							if(scrnloc)
-								for(var/obj/battlemarker/o in ua.battlescrnobjs)
+								for(var/obj/battleobj/o in ua.battlescrnobjs)
 									if(o.screen_loc == scrnloc)
 										no = 1
 

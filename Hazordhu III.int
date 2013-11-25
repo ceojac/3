@@ -4,7 +4,7 @@ MAP_ICON_TYPE: 0
 WINDOW: Chat.dm;battle.dm;leinterface.dmf;ai.dm;battleicons.dmi;general.dm;interface.dm;Login.dm;party.dm;regions.dm;Movement.dm;inventory.dm;settlements.dm;ERROR CODES.dm;pathfinding.dm;__def.dm
 LAST_COMPILE_VERSION: 501.1217
 FILE: battle.dm
-LAST_COMPILE_TIME: 1385344513
+LAST_COMPILE_TIME: 1385344955
 AUTO_FILE_DIR: ON
 */
 // END_INTERNALS
