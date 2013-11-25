@@ -1,6 +1,6 @@
 mob
 	Bump(mob/m)
-		if(!party)
+		if(!party || !m.party || battle || m.battle)
 		 ..()
 		else
 			switch(alert("Would you like to engage [m] in battle?",, "Yes", "No"))
@@ -71,9 +71,6 @@ battle
 					g.mouse_opacity = 0
 					g.screen_loc = "battlemap:1,1 to 11,11"
 					par.client.screen += g
-
-					for(var/mob/p in participants)
-						if(p.client) p.client.screen += g
 
 				var/numunits = 0
 				if(par.party)
