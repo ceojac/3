@@ -100,7 +100,7 @@ battle
 								if(p == par)
 									p.client.screen += o
 								else
-									var/obj/battleobj/o2 = new o
+									var/obj/battleobj/o2 = new o.type
 									u.battlescrnobjs += o2
 									p.client.screen += o2
 									o.twinobjs += o2
