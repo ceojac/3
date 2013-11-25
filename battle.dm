@@ -66,12 +66,7 @@ battle
 
 				if(par.client)
 					winset(par, "battlemap", "is-visible=true")
-					var/obj/battleobj/g = new
-
-					g.icon = 'grass.dmi'
-					g.mouse_opacity = 0
-					g.screen_loc = "battlemap:1,1 to 11,11"
-					g.layer = OBJ_LAYER - 0.5
+					var/obj/battlegrass/g = new
 
 					par.client.screen += g
 
@@ -207,16 +202,18 @@ battle
 			var/adamtrue = defr.amt <= 0 ? adam + defr.amt : adam
 			var/ddamtrue = atkr.amt <= 0 ? ddam + atkr.amt : ddam
 
-			if(atkr.amt <= 0)
+			if(atkr.amt > 1)
+				participants << output("<b>[atkr.party.leader]</b>'s <b>[atkr]</b> received [ddamtrue] casualties from <b>[defr.party.leader]'s <b>[defr]</b>.", "battleoutput")
+			else
 				participants << output("<b>[atkr.party.leader]</b>'s <b>[atkr]</b> has perished in battle.", "battleoutput")
 				del atkr
+
+			if(defr.amt > 1)
+				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> received [adamtrue] casualties from <b>[atkr.party.leader]'s <b>[atkr]</b>.", "battleoutput")
+
 			else
-				participants << output("<b>[atkr.party.leader]</b>'s <b>[atkr]</b> received [ddamtrue] casualties from <b>[defr.party.leader]'s <b>[defr]</b>.", "battleoutput")
-			if(defr.amt <= 0)
 				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> has perished in battle.", "battleoutput")
 				del defr
-			else
-				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> received [adamtrue] casualties from <b>[atkr.party.leader]'s <b>[atkr]</b>.", "battleoutput")
 
 			if(returnvictor)
 				if(defr && atkr)
@@ -272,6 +269,12 @@ battle
 			phase = "Issuing"
 
 obj
+	battlegrass
+		icon = 'grass.dmi'
+		mouse_opacity = 0
+		screen_loc = "battlemap:1,1 to 11,11"
+		layer = OBJ_LAYER - 0.5
+
 	battleobj
 		var
 			unit/realunit
@@ -287,7 +290,6 @@ obj
 					usr.client.screen -= b
 
 				var/unit/u = realunit
-				var/us[] = realunit.party.units
 
 				for(var/dirs = 1, dirs <= 4, dirs ++)
 					var/no
@@ -328,11 +330,9 @@ obj
 									x = u.battlex
 									y = calc
 
-						for(var/unit/ua in us)
-							if(scrnloc)
-								for(var/obj/battleobj/o in ua.battlescrnobjs)
-									if(o.screen_loc == scrnloc)
-										no = 1
+						for(var/obj/battleobj/o in usr.client.screen)
+							if(o.screen_loc == scrnloc)
+								no = 1
 
 						var/obj/battlemarker/m = new
 						m.icon_state = "highlight"
