@@ -67,9 +67,12 @@ battle
 				if(par.client)
 					winset(par, "battlemap", "is-visible=true")
 					var/obj/battleobj/g = new
+
 					g.icon = 'grass.dmi'
 					g.mouse_opacity = 0
 					g.screen_loc = "battlemap:1,1 to 11,11"
+					g.layer = OBJ_LAYER - 0.5
+
 					par.client.screen += g
 
 				var/numunits = 0
