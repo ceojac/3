@@ -101,10 +101,17 @@ battle
 									p.client.screen += o
 								else
 									var/obj/battleobj/o2 = new o.type
+
+									o2.realunit = u
+									o2.battle = src
+
+									o2.icon = 'players.dmi'
+									o2.icon_state = "[u.name]"
+									o2.name = u.name
+
 									u.battlescrnobjs += o2
 									p.client.screen += o2
-									o.twinobjs += o2
-									o2.twinobjs += o
+
 
 		execute()
 
