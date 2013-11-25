@@ -1,18 +1,11 @@
-
-
-
-
-
-
-
-
-
-
 mob
 	verb
 		cardinal(n as num)
 			n |= 15
 			usr << n
+
+		get_z()
+			usr << z
 	ai
 		icon = 'players.dmi'
 		icon_state = "ai"

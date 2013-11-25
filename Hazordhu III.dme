@@ -21,10 +21,10 @@
 // BEGIN_INCLUDE
 #include "__def.dm"
 #include "ai.dm"
+#include "battle.dm"
 #include "Chat.dm"
 #include "ERROR CODES.dm"
 #include "general.dm"
-#include "Idears.dm"
 #include "interface.dm"
 #include "inventory.dm"
 #include "Login.dm"

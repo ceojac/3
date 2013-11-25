@@ -1,5 +1,6 @@
 mob/verb/make_party()
-	new /party(src)
+	if(!party)	new /party(src)
+	else src << "You are already in a party."
 
 mob
 	var party/party
@@ -13,6 +14,9 @@ party
 	var
 		list/members = list()
 		mob/leader
+
+		units[] = new
+		unitsmax = 5
 
 	New(mob/m)
 		join(m)
@@ -34,13 +38,14 @@ party
 			set src in view(0)
 			var/total_size
 			var/mems_list = usr.party.members
+			var/units = usr.party.units
 			for(var/mem in mems_list)
-				if(istext(mem))		// Units only exist as text at this point
-					usr << "[mem] - [mems_list[mem]]"
-					total_size += mems_list[mem]
-				else
-					usr << "<b>[mem][usr.party.leader==mem?" (Leader)":""]</b>"
-					total_size ++
+				usr << "<b>[mem][usr.party.leader==mem?" (Leader)":""]</b>"
+				total_size ++
+			for(var/unit/unit in units)
+				usr << "[unit.name] = [unit.amt]/[unit.max]"
+				total_size ++
+
 			usr << "TOTAL PARTY SIZE: [total_size]"
 
 
@@ -67,7 +72,7 @@ party
 			return 0
 
 		join(mob/m)
-			if(!m.client) return
+			//if(!m.client) return
 			m.verbs += typesof(/party/verb/)
 			members += m
 			m.party = src
