@@ -83,24 +83,28 @@ battle
 						var/obj/battleobj/o = new
 
 						o.realunit = u
-						u.battlescrnobj = o
+						u.battlescrnobjs += o
 						o.battle = src
 
 						o.icon = 'players.dmi'
 						o.icon_state = "[u.name]"
 						o.name = u.name
 
-						if(parnum == 1)
-							u.battlex = round(11/2) - round(par.party.units.len/2) + numunits
-							u.battley = 11
-						else
-							u.battlex = round(11/2, -1) - round(par.party.units.len/2, -1) - numunits
-							u.battley = 1
+						u.battlex = round(11/2) - round(par.party.units.len/2) + numunits
+						if(parnum == 1) u.battley = 11
+						else u.battley = 1
 
 						for(var/mob/p in participants)
 							if(p.client)
 								o.screen_loc = "battlemap:[u.battlex], [u.battley]"
-								p.client.screen += o
+								if(p == par)
+									p.client.screen += o
+								else
+									var/obj/battleobj/o2 = new o
+									u.battlescrnobjs += o2
+									p.client.screen += o2
+									o.twinobjs += o2
+									o2.twinobjs += o
 
 		execute()
 
@@ -171,7 +175,8 @@ battle
 				if((!win && !conflicted) || (win && conflicted))
 					var/scrnloc = movinglocs[unit]
 					var/obj/battlemarker/mrk = moving[unit]
-					unit.battlescrnobj.screen_loc = scrnloc
+					for(var/obj/battleobj/o in unit.battlescrnobjs)
+						o.screen_loc = scrnloc
 					unit.battlex = mrk.screenx
 					unit.battley = mrk.screeny
 					participants << output("<b>[unit.party.leader]</b>'s <b>[unit]</b> has moved to <b>[unit.battlex]</b>, <b>[unit.battley]</b>.")
@@ -263,6 +268,8 @@ obj
 			unit/realunit
 			battle/battle
 
+			twinobjs[] = new
+
 		Click()
 			if(!realunit || (realunit && battle.phase != "Issuing") || realunit.party != usr.party) ..()
 
@@ -313,8 +320,10 @@ obj
 									y = calc
 
 						for(var/unit/ua in us)
-							if(scrnloc && ua.battlescrnobj.screen_loc == scrnloc)
-								no = 1
+							if(scrnloc)
+								for(var/obj/battlemarker/o in ua.battlescrnobjs)
+									if(o.screen_loc == scrnloc)
+										no = 1
 
 						var/obj/battlemarker/m = new
 						m.icon_state = "highlight"
@@ -383,7 +392,8 @@ unit
 
 		battlex
 		battley
-		obj/battleobj/battlescrnobj
+
+		battlescrnobjs[] = new
 
 	infantry
 		name = "infantry"
