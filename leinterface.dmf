@@ -299,7 +299,7 @@ window "battlemap"
 		is-disabled = false
 		is-transparent = false
 		is-default = false
-		border = line
+		border = sunken
 		drop-zone = false
 		right-click = false
 		saved-params = ""
