@@ -10,7 +10,7 @@ world/New()
 
 mob
 	Bump(mob/m)
-		if(!party || !m.party || battle || m.battle)
+		if(!party)// || !m.party || battle || m.battle)
 		 ..()
 		else
 			switch(alert("Would you like to engage [m] in battle?",, "Yes", "No"))
@@ -25,6 +25,10 @@ mob
 
 					verbs += typesof(/battle/verb)
 					m.verbs += typesof(/battle/verb)
+
+					var/locs[] = list(loc, m.loc)
+					for(var/map/map in locs)
+						btl.envtypes += map
 
 					btl.participants = list(src, m)
 					btl.initiator = src
@@ -58,6 +62,9 @@ battle
 
 		retreating[] = new
 
+		envtypes[] = new
+		obstacles[] = new
+
 	verb
 		commit()
 			switch(alert("Are you sure you want to commit to this move?",, "Yes", "No"))
@@ -88,6 +95,21 @@ battle
 
 	proc
 		initialize()
+			var/ptlobsts[] = new
+
+			if(locate(/map/forest) in envtypes)
+				ptlobsts += /obj/battleobj/obstacle/forest
+			if(locate(/map/hills) in envtypes)
+				ptlobsts += /obj/battleobj/obstacle/hills
+
+			if(ptlobsts.len)
+				for(var/x in 2 to 10)
+					for(var/y in 2 to 10)
+						if(prob(15))
+							var/coords[] = list(x, y)
+							obstacles += coords
+							obstacles[coords] = pick(ptlobsts)
+
 			var/nums = 1
 
 			for(var/mob/par in participants)
@@ -100,12 +122,25 @@ battle
 
 					par.client.screen += g
 
+					for(var/list/coords in obstacles)
+						var/x = coords[1]
+						var/y = coords[2]
+
+						var/envtype = text2path("[obstacles[coords]]")
+						var/obj/battleobj/obstacle/o = new envtype
+
+						o.screen_loc = "battlemap:[x], [y]"
+						o.screenx = x
+						o.screeny = y
+
+						par.client.screen += o
+
 				var/numunits = 0
 				if(par.party)
 					for(var/unit/u in par.party.units)
 						numunits++
 
-						var/obj/battleobj/o = new
+						var/obj/battleobj/unitobj/o = new
 
 						o.realunit = u
 						u.battlescrnobjs += o
@@ -125,7 +160,7 @@ battle
 									o.screen_loc = "battlemap:[u.battlex], [u.battley]"
 									p.client.screen += o
 								else
-									var/obj/battleobj/o2 = new o.type
+									var/obj/battleobj/unitobj/o2 = new o.type
 
 									o2.screen_loc = "battlemap:[u.battlex], [u.battley]"
 
@@ -138,7 +173,6 @@ battle
 
 									u.battlescrnobjs += o2
 									p.client.screen += o2
-
 
 		execute()
 
@@ -210,15 +244,28 @@ battle
 					ys += ((unit.battley + y) <= 11	) ? unit.battley + y : null
 					ys += ((unit.battley - y) > 0	) ? unit.battley - y : null
 
-				for(var/obj/battleobj/o in unit.party.leader.client.screen)
-					if(o.realunit.battley == unit.battley && locate(o.realunit.battlex) in xs)
-						for(var/x in xs)
-							if((o.realunit.battlex > unit.battlex && x >= o.realunit.battlex) || (o.realunit.battlex < unit.battlex && x <= o.realunit.battlex))
-								xs -= x
-					if(o.realunit.battlex == unit.battlex && locate(o.realunit.battley) in ys)
-						for(var/y in ys)
-							if((o.realunit.battley > unit.battley && y >= o.realunit.battley) || (o.realunit.battley < unit.battley && y <= o.realunit.battley))
-								ys -= y
+				for(var/obj/battleobj/b in unit.party.leader.client.screen)
+					if(istype(b, /obj/battleobj/unitobj))
+						var/obj/battleobj/unitobj/o = b
+						if(o.realunit.battley == unit.battley && locate(o.realunit.battlex) in xs)
+							for(var/x in xs)
+								if((o.realunit.battlex > unit.battlex && x >= o.realunit.battlex) || (o.realunit.battlex < unit.battlex && x <= o.realunit.battlex))
+									xs -= x
+						if(o.realunit.battlex == unit.battlex && locate(o.realunit.battley) in ys)
+							for(var/y in ys)
+								if((o.realunit.battley > unit.battley && y >= o.realunit.battley) || (o.realunit.battley < unit.battley && y <= o.realunit.battley))
+									ys -= y
+
+					else if(istype(b, /obj/battleobj/obstacle))
+						var/obj/battleobj/obstacle/o = b
+						if(o.screeny == unit.battley && locate(o.screenx) in xs)
+							for(var/x in xs)
+								if((o.screenx > unit.battlex && x >= o.screenx) || (o.screenx < unit.battlex && x <= o.screenx))
+									xs -= x
+						if(o.screenx == unit.battlex && locate(o.screeny) in ys)
+							for(var/y in ys)
+								if((o.screeny > unit.battley && y >= o.screeny) || (o.screeny < unit.battley && y <= o.screeny))
+									ys -= y
 
 				if(unit.party.leader == initiator && unit.battley != 11)
 					if(ys.len && max(ys) > unit.battley)
@@ -350,7 +397,7 @@ battle
 				if(par.client)	// mostly for debugging using ai
 					par.battlecommitted = 0
 					winset(par, "commit", "is-disabled=false")
-					for(var/obj/battleobj/o in par.client.screen)
+					for(var/obj/battleobj/unitobj/o in par.client.screen)
 						if(!o.realunit && o.icon != 'grass.dmi')
 							del o
 				if(victor)
@@ -370,130 +417,142 @@ obj
 		icon = 'grass.dmi'
 		mouse_opacity = 0
 		screen_loc = "battlemap:1,1 to 11,11"
-		layer = OBJ_LAYER - 0.5
+		layer = OBJ_LAYER - 0.54
 
 	battleobj
-		var
-			unit/realunit
-			battle/battle
+		obstacle
+			var
+				screenx
+				screeny
 
-			twinobjs[] = new
+			forest
+				icon = 'forest.dmi'
 
-		Click()
-			if(!realunit || (realunit && battle.phase != "Issuing") || realunit.party != usr.party || usr.battlecommitted || locate(realunit) in battle.retreating) ..()
+			hills
+				icon = 'hills.dmi'
 
-			else
-				for(var/obj/battlemarker/b in usr.client.screen)
-					usr.client.screen -= b
+		unitobj
+			var
+				unit/realunit
+				battle/battle
 
-				var/unit/u = realunit
+				twinobjs[] = new
 
-				for(var/dirs = 1, dirs <= 4, dirs ++)
-					var/no
-					for(var/tiles = 1, tiles <= u.spd, tiles ++)
-						var/scrnloc
-						var/calc
-
-						var/x
-						var/y
-
-						switch(dirs)
-
-							if(1)
-								calc = u.battlex + tiles
-								if(calc <= 11 && calc > 0)
-									scrnloc = "battlemap:[calc], [u.battley]"
-									x = calc
-									y = u.battley
-
-							if(2)
-								calc = u.battlex - tiles
-								if(calc <= 11 && calc > 0)
-									scrnloc = "battlemap:[calc], [u.battley]"
-									x = calc
-									y = u.battley
-
-							if(3)
-								calc = u.battley + tiles
-								if(calc <= 11 && calc > 0)
-									scrnloc = "battlemap:[u.battlex], [calc]"
-									x = u.battlex
-									y = calc
-
-							if(4)
-								calc = u.battley - tiles
-								if(calc <= 11 && calc > 0)
-									scrnloc = "battlemap:[u.battlex], [calc]"
-									x = u.battlex
-									y = calc
-
-						for(var/obj/battleobj/o in usr.client.screen)
-							if(o.screen_loc == scrnloc)
-								no = 1
-
-						var/obj/battlemarker/m = new
-						m.icon_state = "highlight"
-
-						m.screen_loc = no ? null : scrnloc
-
-						if(m.screen_loc)
-							usr.client.screen += m
-							m.parentunit = realunit
-							m.screenx = x
-							m.screeny = y
-
-				for(var/obj/battleobj/b in usr.client.screen)
-					if(!b.realunit)
-						continue
-					var/unit/bu = b.realunit
-					if(bu.battlex >= u.battlex - u.rng && bu.battlex <= u.battlex + u.rng && bu.battley >= u.battley - u.rng && bu.battley <= u.battley + u.rng)
-						if(bu.party != u.party) //bu != u) //for debugging with ai
-							var/obj/battlemarker/attack/m = new
-
-							m.screen_loc = "battlemap:[bu.battlex], [bu.battley]"
-							usr.client.screen += m
-							m.parentunit = realunit
-							m.screenx = bu.battlex
-							m.screeny = bu.battley
-							m.markedunit = bu
-
-				if(battle.initiator == usr)
-					for(var/scrnloc in battletop)
-						var/no
-						for(var/obj/battleobj/o in usr.client.screen)
-							if(o.screen_loc == scrnloc)
-								no = 1
-
-						if(no) continue
-
-						if(realunit.battley == 11) break
-
-						var/obj/battlemarker/retreat/m = new
-
-						m.dir = NORTH
-						m.screen_loc = scrnloc
-						m.screeny = 11
-						usr.client.screen += m
-						m.parentunit = realunit
+			Click()
+				if(!realunit || (realunit && battle.phase != "Issuing") || realunit.party != usr.party || usr.battlecommitted || locate(realunit) in battle.retreating) ..()
 
 				else
-					for(var/scrnloc in battlebtm)
+					for(var/obj/battlemarker/b in usr.client.screen)
+						usr.client.screen -= b
+
+					var/unit/u = realunit
+
+					for(var/dirs = 1, dirs <= 4, dirs ++)
 						var/no
-						for(var/obj/battleobj/o in usr.client.screen)
-							if(o.screen_loc == scrnloc)
-								no = 1
+						for(var/tiles = 1, tiles <= u.spd, tiles ++)
+							var/scrnloc
+							var/calc
 
-						if(no) continue
+							var/x
+							var/y
 
-						if(realunit.battley == 1) break
+							switch(dirs)
 
-						var/obj/battlemarker/retreat/m = new
+								if(1)
+									calc = u.battlex + tiles
+									if(calc <= 11 && calc > 0)
+										scrnloc = "battlemap:[calc], [u.battley]"
+										x = calc
+										y = u.battley
 
-						m.dir = SOUTH
-						m.screen_loc = scrnloc
-						m.screeny = 1
-						usr.client.screen += m
-						m.parentunit = realunit
+								if(2)
+									calc = u.battlex - tiles
+									if(calc <= 11 && calc > 0)
+										scrnloc = "battlemap:[calc], [u.battley]"
+										x = calc
+										y = u.battley
+
+								if(3)
+									calc = u.battley + tiles
+									if(calc <= 11 && calc > 0)
+										scrnloc = "battlemap:[u.battlex], [calc]"
+										x = u.battlex
+										y = calc
+
+								if(4)
+									calc = u.battley - tiles
+									if(calc <= 11 && calc > 0)
+										scrnloc = "battlemap:[u.battlex], [calc]"
+										x = u.battlex
+										y = calc
+
+							for(var/obj/battleobj/o in usr.client.screen)
+								if(o.screen_loc == scrnloc)
+									no = 1
+
+							var/obj/battlemarker/m = new
+							m.icon_state = "highlight"
+
+							m.screen_loc = no ? null : scrnloc
+
+							if(m.screen_loc)
+								usr.client.screen += m
+								m.parentunit = realunit
+								m.screenx = x
+								m.screeny = y
+
+					for(var/obj/battleobj/unitobj/b in usr.client.screen)
+						if(!b.realunit)
+							continue
+						var/unit/bu = b.realunit
+						if(bu.battlex >= u.battlex - u.rng && bu.battlex <= u.battlex + u.rng && bu.battley >= u.battley - u.rng && bu.battley <= u.battley + u.rng)
+							if(bu.party != u.party) //bu != u) //for debugging with ai
+								var/obj/battlemarker/attack/m = new
+
+								m.screen_loc = "battlemap:[bu.battlex], [bu.battley]"
+								usr.client.screen += m
+								m.parentunit = realunit
+								m.screenx = bu.battlex
+								m.screeny = bu.battley
+								m.markedunit = bu
+
+					if(battle.initiator == usr)
+						for(var/scrnloc in battletop)
+							var/no
+							for(var/obj/battleobj/o in usr.client.screen)
+								if(o.screen_loc == scrnloc)
+									no = 1
+
+							if(no) continue
+
+							if(realunit.battley == 11) break
+
+							var/obj/battlemarker/retreat/m = new
+
+							m.dir = NORTH
+							m.screen_loc = scrnloc
+							m.screeny = 11
+							usr.client.screen += m
+							m.parentunit = realunit
+
+					else
+						for(var/scrnloc in battlebtm)
+							var/no
+							for(var/obj/battleobj/o in usr.client.screen)
+								if(o.screen_loc == scrnloc)
+									no = 1
+
+							if(no) continue
+
+							if(realunit.battley == 1) break
+
+							var/obj/battlemarker/retreat/m = new
+
+							m.dir = SOUTH
+							m.screen_loc = scrnloc
+							m.screeny = 1
+							usr.client.screen += m
+							m.parentunit = realunit
 
 	battlemarker
 		icon = 'battleicons.dmi'

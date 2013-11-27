@@ -7,13 +7,16 @@
 "g" = (/map/grass,/map/path{tag = "icon-pc"; icon_state = "pc"},/area)
 "h" = (/map/grass,/map/path{tag = "icon-pb"; icon_state = "pb"},/area)
 "i" = (/map/grass,/settlement/hdrozum/village{name = "Plainview"},/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
-"j" = (/map/grass,/map/forest,/area)
-"k" = (/mob/ai,/map/grass,/area)
+"j" = (/mob/ai,/map/grass,/area)
+"k" = (/map/grass,/map/forest,/area)
 "l" = (/map/grass,/settlement/hdrozum/city{info = "Upon entering Ismuth, you feel a sense of peace and awe.  The city is hushed, but strangely so, as the streets are anything but empty.  Those who are talking do so quietly.  A patrol passes you, and you see the towering shadow of the Great Library of Ismuth looming over the city."; name = "Ismuth"},/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
 "m" = (/map/grass,/mob/ai,/map/path{tag = "icon-p2"; icon_state = "p2"},/area)
 "n" = (/map/grass,/map/path{tag = "icon-pa"; icon_state = "pa"},/area)
 "o" = (/obj/start,/map/grass,/area)
 "p" = (/map/grass,/map/hills,/area)
+"q" = (/map/grass,/map/mountain,/area)
+"r" = (/map/grass,/mob/ai,/map/hills,/area)
+"s" = (/map/grass,/map/river{icon_state = "r1"; tag = "icon-r1"},/area)
 
 (1,1,1) = {"
 aaaaaaaaaaaaaaaaaaaa
@@ -24,16 +27,16 @@ aaaaaaaaaaaaeaaaaaaa
 aaaaaaaaaaaaeaaaaaaa
 aaaaaaaafcccgaaaaaaa
 aaaaaaaaaaaahccciaaa
-aaaaaaaaaaaaeaaaaaaa
-aaaaajjjaaaaeaaaaaaa
-aaaaajjjaaaaeaaaaaaa
-aaakaaaaaaaaeaaaaaaa
+aaaaaajaaaaaeaaaaaaa
+aaaaakkkaaaaeaaaaaaa
+aaaaakkkaaaaeaaaaaaa
+aaajaaaaaaaaeaaaaaaa
 lcccccccccmcnaaaaaaa
 aaaaaaaaaaaaaaaaaaaa
-aaaaoaapppaaaaaaaaaa
-aaaaaaapppaaaaaaaaaa
-aaaaaaapppaaaaaaaaaa
-aaaaaaaaaaaaaaaaaaaa
-aaaaaaaaaaaaaaaaaaaa
-aaaaaaaaaaaaaaaaaaaa
+aaaaoaapppaaaqqqaaaa
+aaaaaaappraaaqsqaaaa
+aaaaaaapppaaaasaaaaa
+aaaaaaaaaaaaaasjaaaa
+aaaaaaaaaaaaaasaaaaa
+aaaaaaaaaaaaaasaaaaa
 "}
