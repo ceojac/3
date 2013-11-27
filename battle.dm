@@ -10,7 +10,7 @@ world/New()
 
 mob
 	Bump(mob/m)
-		if(!party || !m.party || battle || m.battle)
+		if(!m || !party || !m.party || battle || m.battle)
 		 ..()
 		else
 			switch(alert("Would you like to engage [m] in battle?",, "Yes", "No"))
