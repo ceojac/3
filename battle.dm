@@ -75,7 +75,7 @@ battle
 							retreaters++
 
 					if(!usr.marked && retreaters != usr.party.units.len)
-						usr << "You need to select a move first."
+						alert(usr, "You need to select a move first.")
 						return
 					else
 						usr.battlecommitted = 1
@@ -103,7 +103,7 @@ battle
 				ptlobsts += /obj/battleobj/obstacle/hills
 
 			if(ptlobsts.len)
-				for(var/x in 2 to 10)
+				for(var/x in 1 to 11)
 					for(var/y in 2 to 10)
 						if(prob(15))
 							var/coords[] = list(x, y)
@@ -177,9 +177,9 @@ battle
 		execute()
 
 			var/attacking[] = new
-			var/rngattacking[] = new
 			var/moving[] = new
 			var/movinglocs[] = new
+			var/moved[] = new
 
 			//marking phase
 
@@ -196,12 +196,8 @@ battle
 
 					else if(istype(mrk, /obj/battlemarker/attack))
 						var/obj/battlemarker/attack/atm = mrk
-						if(unit.rng > 1)					// need to change this for distance instead of the rng variable
-							rngattacking += unit
-							rngattacking[unit] = atm.markedunit
-						else
-							attacking += unit
-							attacking[unit] = atm.markedunit
+						attacking += unit
+						attacking[unit] = atm.markedunit
 
 					else if(istype(mrk, /obj/battlemarker/retreat))
 						retreating += unit
@@ -217,19 +213,21 @@ battle
 			participants << output("<HR><center>Turn [turn]</center><HR>", "battleoutput")
 
 			for(var/unit/unit in attacking)
+				if(locate(unit) in moved) continue
+
 				var/unit/atu = attacking[unit]
-				if(locate(atu) in attacking && attacking[atu] != unit)
-					attack(unit, atu)	// combat() allows atu to attack back, don't want atu to attack back if they are attacking someone else1
+				var/ranged = (atu.battlex > unit.battlex + 1 || atu.battley > unit.battley + 1 || atu.battley < unit.battley - 1 || atu.battlex < unit.battlex - 1) ? 1 : 0
+				if(ranged || (locate(atu) in attacking && attacking[atu] != unit))
+					attack(unit, atu, ranged)	// combat() allows atu to attack back, don't want atu to attack back if they are attacking someone else
+					moved += unit
 				else if(attacking[atu] == unit)
 					combat(unit, atu)
 					attacking -= atu	// so units don't engage in combat twice if they are both marked
-
-			for(var/unit/unit in rngattacking)
-				var/unit/atu = rngattacking[unit]
-				var/ranged = (atu.battlex > unit.battlex + 1 || atu.battley > unit.battley + 1 || atu.battley < unit.battley - 1 || atu.battlex < unit.battlex - 1) ? 1 : 0
-				attack(unit, atu, ranged)
+					moved += unit
 
 			for(var/unit/unit in retreating)
+				if(locate(unit) in moved) continue
+
 				var/xs[] = new
 				var/ys[] = new
 
@@ -295,16 +293,21 @@ battle
 						o.screen_loc = "battlemap:[unit.battlex], [unit.battley]"
 
 					participants << output("<b>[unit.party.leader]</b>'s <b>[unit]</b> has retreated to <b>[unit.battlex]</b>, <b>[unit.battley]</b>.", "battleoutput")
+
 					movinglocs += unit
 					movinglocs[unit] = "battlemap:[unit.battlex], [unit.battley]"
 
 			for(var/unit/unit in moving)
+				if(locate(unit) in moved) continue
+
 				var/obj/battlemarker/mrk = moving[unit]
 				var/scrnloc = "battlemap:[mrk.screenx], [mrk.screeny]"
 				movinglocs += unit
 				movinglocs[unit] = scrnloc
 
 			for(var/unit/unit in movinglocs)
+				if(locate(unit) in moved) continue
+
 				var/unit/win
 				var/conflicted
 				for(var/unit/con in movinglocs)
@@ -328,10 +331,11 @@ battle
 					unit.battley = mrk.screeny
 					participants << output("<b>[unit.party.leader]</b>'s <b>[unit]</b> has moved to <b>[unit.battlex]</b>, <b>[unit.battley]</b>.", "battleoutput")
 
+					moved += unit
+
 				else if(!win && conflicted)
 					moving -= unit
 					movinglocs -= unit	// so it will not enter the loop again
-
 
 			reset()
 
@@ -407,6 +411,7 @@ battle
 
 			if(victor)
 				world << "[victor] has defeated [loser]!"
+				alert(victor, "A winner is you!")
 				del src
 
 			phase = "Issuing"
@@ -589,11 +594,15 @@ obj
 				icon_state = "highlight1"
 			usr.marked = src
 
+		name = "move"
+
 		attack
 			icon_state = "marker"
+			name = "attack"
 
 		retreat
 			icon_state = "arrow"
+			name = "retreat"
 
 unit
 	var

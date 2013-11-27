@@ -225,6 +225,34 @@ window "battlemap"
 		macro = ""
 		menu = ""
 		on-close = ""
+	elem "compromise"
+		type = BUTTON
+		pos = 472,312
+		size = 96x24
+		anchor1 = none
+		anchor2 = none
+		font-family = ""
+		font-size = 0
+		font-style = ""
+		text-color = #000000
+		background-color = none
+		is-visible = true
+		is-disabled = false
+		is-transparent = false
+		is-default = false
+		border = none
+		drop-zone = false
+		right-click = false
+		saved-params = "is-checked"
+		on-size = ""
+		text = "Offer Compromise"
+		image = ""
+		command = ""
+		is-flat = false
+		stretch = false
+		is-checked = false
+		group = ""
+		button-type = pushbutton
 	elem "phase"
 		type = GRID
 		pos = 400,248
@@ -259,7 +287,7 @@ window "battlemap"
 	elem "forfeit"
 		type = BUTTON
 		pos = 472,280
-		size = 96x56
+		size = 96x24
 		anchor1 = none
 		anchor2 = none
 		font-family = ""
