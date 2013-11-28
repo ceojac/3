@@ -99,7 +99,7 @@ settlement
 								world << "[recruits] = [recruits.amt]"
 						if("Existing")
 							var/unit/mem = input("Which unit would you like to increase?") in mems	// why doesnt this line work!!!!!!!!!!!
-							mem.amt += num
+							mem.amt += num															// SON OF A BITCH
 							if(mem.amt > mem.max) mem.amt = mem.max
 							world << "[mem] = [mem.amt]"
 

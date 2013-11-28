@@ -10,7 +10,7 @@ world/New()
 
 mob
 	Bump(mob/m)
-		if(!m || !party || !m.party || battle || m.battle)
+		if(!istype(m, /mob) || !party || !m.party || battle || m.battle)
 		 ..()
 		else
 			switch(alert("Would you like to engage [m] in battle?",, "Yes", "No"))
@@ -91,7 +91,54 @@ battle
 						if(numcomm == usr.battle.participants.len)	// all of this will have to be put into a proc somewhere eventually so AIs
 							usr.battle.execute()					// can use it too.
 
-				if("No") return
+		forfeit()
+			switch(alert("Are you sure you want to forfeit? (Warning: you will lose units!)",, "Yes", "No"))
+				if("Yes")
+					var/enemyu
+					var/usru
+					var/usrm
+					for(var/mob/par in usr.battle.participants)
+						par.battle = null
+						par.client.screen = list(null)
+						winset(par, "battlemap", "is-visible=false")
+						if(par != usr)
+							for(var/unit/u in par.party.units)
+								enemyu += u.amt
+							spawn alert(par, "[usr] has forfeit the battle.")
+					for(var/unit/u in usr.party.units)
+						usru += u.amt
+						usrm ++
+					var/losses = round(usru/usrm * (enemyu / (usrm * 50) * 0.25))
+
+					for(var/unit/u in usr.party.units)
+						u.amt -= losses
+						if(u.amt <= 0)
+							del u
+
+					alert(usr, "You have lost [losses] of each unit.")
+
+					world << "[usr] has forfeit the battle!"
+
+		compromise()
+			switch(alert("Would you like to offer your opponent a compromise?",, "Yes", "No"))
+				if("Yes")
+					var/acptd = 1
+					for(var/mob/par in usr.battle.participants)
+						if(par != usr)
+							switch(alert("[usr] has offered to compromise.",, "Decline", "Accept"))
+								if("Accept")
+									acptd ++
+
+					if(acptd == usr.battle.participants.len)
+						for(var/mob/par in usr.battle.participants)
+							par.battle = null
+							par.client.screen = list(null)
+							winset(par, "battlemap", "is-visible=false")
+							alert(par, "The battle has settled on a compromise.")
+
+					else
+						alert(usr, "Your opponent has not accepted the compromise.")
+						return
 
 	proc
 		initialize()
@@ -179,7 +226,6 @@ battle
 			var/attacking[] = new
 			var/moving[] = new
 			var/movinglocs[] = new
-			var/moved[] = new
 
 			//marking phase
 
@@ -213,20 +259,22 @@ battle
 			participants << output("<HR><center>Turn [turn]</center><HR>", "battleoutput")
 
 			for(var/unit/unit in attacking)
-				if(locate(unit) in moved) continue
 
 				var/unit/atu = attacking[unit]
+				if(!atu) continue
 				var/ranged = (atu.battlex > unit.battlex + 1 || atu.battley > unit.battley + 1 || atu.battley < unit.battley - 1 || atu.battlex < unit.battlex - 1) ? 1 : 0
 				if(ranged || (locate(atu) in attacking && attacking[atu] != unit))
-					attack(unit, atu, ranged)	// combat() allows atu to attack back, don't want atu to attack back if they are attacking someone else
-					moved += unit
-				else if(attacking[atu] == unit)
+					var/dist
+					if(locate(atu) in moving)
+						var/obj/battlemarker/m = moving[atu]
+						dist = max(m.screenx - atu.battlex, atu.battlex - m.screenx, m.screeny - atu.battley, atu.battley - m.screeny)
+
+					attack(unit, atu, ranged, dist)	// combat() allows atu to attack back, don't want atu to attack back if they are attacking someone else
+				else
 					combat(unit, atu)
 					attacking -= atu	// so units don't engage in combat twice if they are both marked
-					moved += unit
 
 			for(var/unit/unit in retreating)
-				if(locate(unit) in moved) continue
 
 				var/xs[] = new
 				var/ys[] = new
@@ -298,7 +346,6 @@ battle
 					movinglocs[unit] = "battlemap:[unit.battlex], [unit.battley]"
 
 			for(var/unit/unit in moving)
-				if(locate(unit) in moved) continue
 
 				var/obj/battlemarker/mrk = moving[unit]
 				var/scrnloc = "battlemap:[mrk.screenx], [mrk.screeny]"
@@ -306,7 +353,6 @@ battle
 				movinglocs[unit] = scrnloc
 
 			for(var/unit/unit in movinglocs)
-				if(locate(unit) in moved) continue
 
 				var/unit/win
 				var/conflicted
@@ -331,8 +377,6 @@ battle
 					unit.battley = mrk.screeny
 					participants << output("<b>[unit.party.leader]</b>'s <b>[unit]</b> has moved to <b>[unit.battlex]</b>, <b>[unit.battley]</b>.", "battleoutput")
 
-					moved += unit
-
 				else if(!win && conflicted)
 					moving -= unit
 					movinglocs -= unit	// so it will not enter the loop again
@@ -340,8 +384,8 @@ battle
 			reset()
 
 		combat(unit/atkr, unit/defr, returnvictor = 0)
-			var/adam = max(0, round(((atkr.atk/5) - (defr.def/5)) * atkr.amt + rand(-1*atkr.amt/5, atkr.amt/5)))
-			var/ddam = max(0, round(((defr.atk/5) - (atkr.def/5)) * defr.amt + rand(-1*defr.amt/5, defr.amt/5)))
+			var/adam = max(0, round(atkr.atk/5 * atkr.amt / defr.def + rand(-atkr.amt/5, atkr.amt/5)))
+			var/ddam = max(0, round(defr.atk/5 * defr.amt / atkr.def + rand(-defr.amt/5, defr.amt/5)))
 
 			defr.amt -= adam
 			atkr.amt -= ddam
@@ -349,16 +393,15 @@ battle
 			var/adamtrue = defr.amt <= 0 ? adam + defr.amt : adam
 			var/ddamtrue = atkr.amt <= 0 ? ddam + atkr.amt : ddam
 
-			if(atkr.amt > 1)
-				participants << output("<b>[atkr.party.leader]</b>'s <b>[atkr]</b> received [ddamtrue] casualties from <b>[defr.party.leader]'s <b>[defr]</b>.", "battleoutput")
-			else
+			participants << output("<b>[atkr.party.leader]</b>'s <b>[atkr]</b> received [ddamtrue] casualties from <b>[defr.party.leader]'s <b>[defr]</b>.", "battleoutput")
+
+			participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> received [adamtrue] casualties from <b>[atkr.party.leader]'s <b>[atkr]</b>.", "battleoutput")
+
+			if(atkr.amt < 1)
 				participants << output("<b>[atkr.party.leader]</b>'s <b>[atkr]</b> has perished in battle.", "battleoutput")
 				del atkr
 
-			if(defr.amt > 1)
-				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> received [adamtrue] casualties from <b>[atkr.party.leader]'s <b>[atkr]</b>.", "battleoutput")
-
-			else
+			if(defr.amt < 1)
 				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> has perished in battle.", "battleoutput")
 				del defr
 
@@ -371,8 +414,8 @@ battle
 				else if(defr) return defr
 				else if(atkr) return atkr
 
-		attack(unit/atkr, unit/defr, ranged = 0)
-			var/adam = max(0, round((((atkr.atk + (ranged ? atkr.rng-defr.spd : 0))/5) - (defr.def/5)) * atkr.amt + rand(-atkr.amt/5, atkr.amt/5)))
+		attack(unit/atkr, unit/defr, ranged = 0, dist)
+			var/adam = max(0, round(atkr.atk/5 * atkr.amt / (defr.def + (ranged ? dist : 0)) + rand(-atkr.amt/5, atkr.amt/5)))
 
 			defr.amt -= adam
 
@@ -389,7 +432,7 @@ battle
 			var/mob/victor
 			var/mob/loser
 			for(var/mob/par in participants)
-				if(par.party && !par.party.units) // par.party check is for debugging using partyless AI
+				if(par.party && !par.party.units.len) // par.party check is for debugging using partyless AI
 					loser = par
 			for(var/mob/par in participants)
 				if(loser && loser != par)
@@ -442,6 +485,8 @@ obj
 				battle/battle
 
 				twinobjs[] = new
+
+			mouse_opacity = 2
 
 			Click()
 				if(!realunit || (realunit && battle.phase != "Issuing") || realunit.party != usr.party || usr.battlecommitted || locate(realunit) in battle.retreating) ..()
@@ -561,6 +606,7 @@ obj
 
 	battlemarker
 		icon = 'battleicons.dmi'
+		mouse_opacity = 2
 
 		var
 			unit/parentunit

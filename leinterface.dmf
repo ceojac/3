@@ -247,7 +247,7 @@ window "battlemap"
 		on-size = ""
 		text = "Offer Compromise"
 		image = ""
-		command = ""
+		command = "compromise"
 		is-flat = false
 		stretch = false
 		is-checked = false
