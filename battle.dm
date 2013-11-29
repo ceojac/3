@@ -10,8 +10,8 @@ world/New()
 
 mob
 	Bump(mob/m)
-		if(!istype(m, /mob) || !party || !m.party || battle || m.battle)
-		 ..()
+		if(!istype(m, /mob) || !party || !m.party || !party.units || !m.party.units || battle || m.battle)
+			..()
 		else
 			switch(alert("Would you like to engage [m] in battle?",, "Yes", "No"))
 				if("Yes")
@@ -94,12 +94,12 @@ battle
 		forfeit()
 			switch(alert("Are you sure you want to forfeit? (Warning: you will lose units!)",, "Yes", "No"))
 				if("Yes")
-					var/enemyu
-					var/usru
-					var/usrm
+					var/enemyu = 0
+					var/usru = 0
+					var/usrm = 0
 					for(var/mob/par in usr.battle.participants)
 						par.battle = null
-						par.client.screen = list(null)
+						par.client.screen = null
 						winset(par, "battlemap", "is-visible=false")
 						if(par != usr)
 							for(var/unit/u in par.party.units)
@@ -108,12 +108,15 @@ battle
 					for(var/unit/u in usr.party.units)
 						usru += u.amt
 						usrm ++
-					var/losses = round(usru/usrm * (enemyu / (usrm * 50) * 0.25))
+
+					var/losses = 0
+					if(!usrm) // no dividing by 0
+						losses = round(usru/usrm * (enemyu / (usrm * 50) * 0.25))
 
 					for(var/unit/u in usr.party.units)
 						u.amt -= losses
 						if(u.amt <= 0)
-							del u
+							u.die()
 
 					alert(usr, "You have lost [losses] of each unit.")
 
@@ -123,16 +126,15 @@ battle
 			switch(alert("Would you like to offer your opponent a compromise?",, "Yes", "No"))
 				if("Yes")
 					var/acptd = 1
-					for(var/mob/par in usr.battle.participants)
-						if(par != usr)
-							switch(alert("[usr] has offered to compromise.",, "Decline", "Accept"))
-								if("Accept")
-									acptd ++
+					for(var/mob/par in usr.battle.participants - usr)
+						switch(alert("[usr] has offered to compromise.",, "Decline", "Accept"))
+							if("Accept")
+								acptd ++
 
 					if(acptd == usr.battle.participants.len)
 						for(var/mob/par in usr.battle.participants)
 							par.battle = null
-							par.client.screen = list(null)
+							par.client.screen = null
 							winset(par, "battlemap", "is-visible=false")
 							alert(par, "The battle has settled on a compromise.")
 
@@ -399,11 +401,11 @@ battle
 
 			if(atkr.amt < 1)
 				participants << output("<b>[atkr.party.leader]</b>'s <b>[atkr]</b> has perished in battle.", "battleoutput")
-				del atkr
+				atkr.die()
 
 			if(defr.amt < 1)
 				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> has perished in battle.", "battleoutput")
-				del defr
+				defr.die()
 
 			if(returnvictor)
 				if(defr && atkr)
@@ -423,7 +425,7 @@ battle
 
 			if(defr.amt <= 0)
 				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> has perished in battle.", "battleoutput")
-				del defr
+				defr.die()
 			else
 				participants << output("<b>[defr.party.leader]</b>'s <b>[defr]</b> received [adamtrue] casualties from <b>[atkr.party.leader]'s <b>[atkr]</b>.", "battleoutput")
 
@@ -434,9 +436,13 @@ battle
 			for(var/mob/par in participants)
 				if(par.party && !par.party.units.len) // par.party check is for debugging using partyless AI
 					loser = par
+					world << loser
+				else
+					world << par.party.units.len
 			for(var/mob/par in participants)
 				if(loser && loser != par)
 					victor = par
+					world << victor
 					break
 
 			for(var/mob/par in participants)
@@ -449,7 +455,7 @@ battle
 							del o
 				if(victor)
 					par.battle = null
-					par.client.screen = list(null)
+					par.client.screen = null
 					winset(par, "battlemap", "is-visible=false")
 
 			if(victor)
@@ -668,6 +674,11 @@ unit
 		battley
 
 		battlescrnobjs[] = new
+
+	proc
+		die()
+			party.units -= src
+			del src
 
 	infantry
 		name = "infantry"
