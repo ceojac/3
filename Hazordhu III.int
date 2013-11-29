@@ -5,7 +5,7 @@ WINDOW: battle.dm;party.dm;settlements.dm;World Map tool\resources\World Map\riv
 LAST_COMPILE_VERSION: 501.1217
 DIR: World Map tool World Map tool\resources World Map tool\resources\World Map 
 FILE: battle.dm
-LAST_COMPILE_TIME: 1385714645
+LAST_COMPILE_TIME: 1385761223
 AUTO_FILE_DIR: ON
 */
 // END_INTERNALS

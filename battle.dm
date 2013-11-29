@@ -15,9 +15,9 @@ mob
 		else
 			switch(alert("Would you like to engage [m] in battle?",, "Yes", "No"))
 				if("Yes")
-					if(battle || m.battle) return
-
 					alert(m, "[src] has engaged you in battle!")
+
+					if(battle || m.battle) return
 
 					var/battle/btl = new
 					battle = btl
@@ -436,13 +436,9 @@ battle
 			for(var/mob/par in participants)
 				if(par.party && !par.party.units.len) // par.party check is for debugging using partyless AI
 					loser = par
-					world << loser
-				else
-					world << par.party.units.len
 			for(var/mob/par in participants)
 				if(loser && loser != par)
 					victor = par
-					world << victor
 					break
 
 			for(var/mob/par in participants)
